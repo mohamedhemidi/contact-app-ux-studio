@@ -5,16 +5,19 @@ import schema from "./schema";
 import { DynamoDB } from "aws-sdk";
 const dynamoDB = new DynamoDB.DocumentClient();
 
-const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async () => {
+const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
   const params = {
     TableName: "ConctactsTable",
+    Key: {
+      ContactId: event.pathParameters.contactID,
+    },
   };
   try {
-    const res = await dynamoDB.scan(params).promise();
-
-    const contactsList = res.Items.filter((item) => item["archived"] === false);
+    const res = await dynamoDB.get(params).promise();
     return formatJSONResponse(200, {
-      contacts: contactsList,
+      contact: res,
     });
   } catch (error) {
     return formatJSONResponse(400, {
@@ -23,4 +26,4 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async () => {
   }
 };
 
-export const getcontacts = middyfy(handler);
+export const viewcontact = middyfy(handler);
