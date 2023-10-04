@@ -22,6 +22,10 @@ const serverlessConfiguration: AWS = {
     },
     environment: {
       ALLOW_ORIGIN: "*",
+      CUSTOM_AWS_S3_BUCKET: "uxstudio",
+      CUSTOM_AWS_ACCESS_KEY: "AKIAWB52EQAYPW5YZSMF",
+      CUSTOM_AWS_REGION: "eu-west-1",
+      CUSTOM_AWS_SECRET_ACCESS_KEY: "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",
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
     },
@@ -68,13 +72,6 @@ const serverlessConfiguration: AWS = {
             ReadCapacityUnits: 1,
             WriteCapacityUnits: 1,
           },
-        },
-      },
-      UXStudioImages: {
-        Type: 'AWS::S3::Bucket',
-        Properties: {
-          BucketName: 'uxstudio',
-          AccessControl: "PublicRead"
         },
       },
     },

@@ -10,19 +10,21 @@ import { Main } from "./components/Layouts/Main";
 import { Popup } from "./components/Collections/Popup";
 import { useAppDispatch, useAppSelector } from "./utils/hooks";
 import { openPopup } from "./reducers/popupReducer";
-
-interface Popup {
-  active: boolean;
-  type?: "ADD" | "EDIT";
-}
+import { useEffect } from "react";
+import { getContacts } from "./services/contacts.services";
 
 function App() {
   const dispatch = useAppDispatch();
-  const { active, data } = useAppSelector((state) => state.popup);
+  const { active } = useAppSelector((state) => state.popup);
+  const { list } = useAppSelector((state) => state.contacts);
 
   const openPopupHandler = (type: string) => {
-    dispatch(openPopup({ active: true, data: { type } }));
+    dispatch(openPopup({ type }));
   };
+
+  useEffect(() => {
+    dispatch(getContacts());
+  }, []);
 
   return (
     <div className="flex flex-row">
@@ -50,7 +52,7 @@ function App() {
               />
             </Header>
           }
-          content={<Main />}
+          content={<Main data={list} />}
         />
       </div>
       {/* Right Aside */}
@@ -63,7 +65,7 @@ function App() {
           }
         />
       </div>
-      {active ? <Popup data={data} /> : null}
+      {active ? <Popup /> : null}
     </div>
   );
 }

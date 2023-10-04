@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@middy/core": "^3.4.0",
+    "@middy/http-cors": "^4.6.4",
     "@middy/http-json-body-parser": "^3.4.0",
     "@types/aws-sdk": "^2.7.0",
     "aws-sdk": "^2.1467.0",
+    "buffer": "^6.0.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "uuid": "^9.0.1"

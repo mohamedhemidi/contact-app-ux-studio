@@ -1,6 +1,6 @@
 import { handlerPath } from "@libs/handler-resolver";
 import schema from "./schema";
-
+import { origins } from "@libs/cors-origins";
 export const getcontacts = {
   handler: `${handlerPath(__dirname)}/getcontacts.getcontacts`,
   events: [
@@ -8,6 +8,9 @@ export const getcontacts = {
       http: {
         method: "get",
         path: "/getcontacts",
+        cors: {
+          origins,
+        },
       },
     },
   ],
@@ -19,6 +22,9 @@ export const viewcontact = {
       http: {
         method: "get",
         path: "/viewcontact/{contactID}",
+        cors: {
+          origins,
+        },
       },
     },
   ],
@@ -30,6 +36,9 @@ export const addcontact = {
       http: {
         method: "post",
         path: "/addcontact",
+        cors: {
+          origins,
+        },
         request: {
           schemas: {
             "application/json": schema,
@@ -46,6 +55,9 @@ export const updatecontact = {
       http: {
         method: "post",
         path: "/updatecontact/{contactID}",
+        cors: {
+          origins,
+        },
         request: {
           schemas: {
             "application/json": schema,

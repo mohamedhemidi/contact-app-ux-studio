@@ -5,14 +5,18 @@ import schema from "./schema";
 import { DynamoDB, S3 } from "aws-sdk";
 import { v4 } from "uuid";
 const dynamoDB = new DynamoDB.DocumentClient();
-
-const bucketname = "uxstudio"
-const s3subfolder = "profiles"
+import { Buffer } from "buffer";
+const s3 = new S3();
+s3.config.update({
+  accessKeyId: process.env.CUSTOM_AWS_ACCESS_KEY,
+  secretAccessKey: process.env.CUSTOM_AWS_SECRET_ACCESS_KEY,
+  region: process.env.CUSTOM_AWS_REGION,
+});
 
 const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event: any
 ) => {
-  const { email, name, phone, picture } = event.body;
+  const { email, name, phone, picture, base64 } = event.body;
   const id = v4();
   const params = {
     TableName: "ConctactsTable",
@@ -27,6 +31,21 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   };
   try {
     await dynamoDB.put(params).promise();
+    // Handle Image:
+
+    if (base64) {
+      const base64Image = base64;
+
+      const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+      const s3params: S3.PutObjectRequest = {
+        Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+        Key: `${name}.png`,
+        Body: buffer,
+      };
+      await s3.upload(s3params).promise();
+    }
+
     return formatJSONResponse(200, {
       message: "Contact created successfully",
     });

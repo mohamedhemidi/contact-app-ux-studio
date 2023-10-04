@@ -7,13 +7,14 @@ import { openPopup } from "../../../reducers/popupReducer";
 
 interface Props {
   ref?: any;
+  id: string;
 }
 
-const Dropdown = ({ ref }: Props) => {
+const Dropdown = ({ ref, id }: Props) => {
   const dispatch = useAppDispatch();
 
-  const handleEdit = (type: string) => {
-    dispatch(openPopup({ active: true, data: { type } }));
+  const handleContact = (type: string, id: string) => {
+    dispatch(openPopup({ type, id }));
   };
 
   return (
@@ -23,7 +24,7 @@ const Dropdown = ({ ref }: Props) => {
     >
       <div
         className="flex flex-row gap-6 items-center justify-start text-white p-2 hover:bg-[#232323]"
-        onClick={() => handleEdit("EDIT")}
+        onClick={() => handleContact("EDIT", id)}
       >
         <ButtonSecondary icon={Settings} />
         <h1>Edit</h1>
@@ -32,7 +33,10 @@ const Dropdown = ({ ref }: Props) => {
         <ButtonSecondary icon={Favourite} />
         <h1>Favourite</h1>
       </div>
-      <div className="flex flex-row gap-6 items-center justify-start text-white p-2 hover:bg-[#232323]">
+      <div
+        className="flex flex-row gap-6 items-center justify-start text-white p-2 hover:bg-[#232323]"
+        onClick={() => handleContact("DELETE", id)}
+      >
         <ButtonSecondary icon={Delete} />
         <h1>Remove</h1>
       </div>

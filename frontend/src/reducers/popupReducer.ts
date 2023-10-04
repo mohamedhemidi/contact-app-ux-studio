@@ -1,30 +1,23 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { PopupData } from "../Models/popup";
 
-interface Data {
-  type?: string;
-}
-
-interface PopupState {
-  active: boolean;
-  data: Data;
-}
-const initialState: PopupState = {
+const initialState: PopupData = {
+  id: "",
+  type: "",
   active: false,
-  data: {},
 };
 
 const popupSlice = createSlice({
   name: "popup",
   initialState,
   reducers: {
-    openPopup: (state, action: PayloadAction<PopupState>) => {
-      console.log(state, action);
-      state.active = action.payload.active;
-      state.data["type"] = action.payload.data.type;
+    openPopup: (state, action: PayloadAction<PopupData>) => {
+      state.active = true;
+      state.id = action.payload.id;
+      state.type = action.payload.type;
     },
-    closePopup: (state) => {
-      state.active = false;
-      state.data = {};
+    closePopup: () => {
+      return initialState;
     },
   },
 });
