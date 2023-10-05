@@ -9,7 +9,7 @@ const Button = ({ label, onClick, icon }: Props) => {
       onClick={onClick}
       className={`flex flex-row gap-2 ${
         label ? "pt-2 pr-4 pb-2 pl-3" : "w-10 h-10 justify-center items-center"
-      } rounded-lg bg-btnPrimary hover:bg-btnPrimaryHover active:bg-btnPrimaryPressed text-white cursor-pointer`}
+      } rounded-lg bg-btnPrimary hover:bg-btnPrimaryHover active:bg-btnPrimaryPressed text-white cursor-pointer text-[14px]`}
     >
       {icon ? <img className="w-6 h-6" src={icon} /> : null}
       {label}

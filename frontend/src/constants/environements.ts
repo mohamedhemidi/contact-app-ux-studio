@@ -1,7 +1,7 @@
 const ENV: ObjectKey = import.meta.env.VITE_APP_ENV || "dev";
 
 const BASE_URL = {
-  dev: "https://r2sfl2tsga.execute-api.eu-west-1.amazonaws.com/dev",
+  dev: "https://z5r1qo8qne.execute-api.eu-west-1.amazonaws.com/dev",
   test: "",
   prod: "",
 };

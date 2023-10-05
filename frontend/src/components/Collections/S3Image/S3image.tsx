@@ -7,7 +7,6 @@ import { useAppSelector } from "../../../utils/hooks";
 interface Props {
   src: string;
   styles: string;
-  buffer?: string;
 }
 
 AWS.config.update({
@@ -18,10 +17,9 @@ AWS.config.update({
 
 const S3Image = ({ src, styles }: Props) => {
   const [imageUrl, setImageUrl] = useState<any>(null);
-  const { type } = useAppSelector((state) => state.popup);
-  const { contact } = useAppSelector<any>((state) => state.contacts);
+  const { active } = useAppSelector((state) => state.popup);
   useEffect(() => {
-    async function getImageUrl(type: any) {
+    async function getImageUrl() {
       const s3 = new AWS.S3();
       let url = "";
       const params = (name: any) => {
@@ -32,28 +30,12 @@ const S3Image = ({ src, styles }: Props) => {
         };
       };
 
-      switch (type) {
-        case "ADD":
-          url = src;
-          setImageUrl(url);
-          break;
-        case "EDIT":
-          url = await s3.getSignedUrlPromise(
-            "getObject",
-            params(contact.picture)
-          );
-          setImageUrl(url);
-          break;
-
-        default:
-          url = await s3.getSignedUrlPromise("getObject", params(src));
-          setImageUrl(url);
-          break;
-      }
+      url = await s3.getSignedUrlPromise("getObject", params(src));
+      setImageUrl(url);
     }
 
-    getImageUrl(type);
-  }, [src]);
+    getImageUrl();
+  }, [src, active]);
 
   const onImageError = (e: any) => {
     e.target.src = Default;

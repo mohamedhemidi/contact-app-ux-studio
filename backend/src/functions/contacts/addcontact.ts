@@ -16,8 +16,9 @@ s3.config.update({
 const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event: any
 ) => {
-  const { email, name, phone, picture, base64 } = event.body;
+  const { email, name, phone, base64 } = event.body;
   const id = v4();
+  const picture_slug = `${name.split(" ").join("_")}_${email}`;
   const params = {
     TableName: "ConctactsTable",
     Item: {
@@ -25,7 +26,7 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       name,
       email,
       phone,
-      picture,
+      picture: base64 ? picture_slug : "",
       archived: false,
     },
   };
@@ -40,7 +41,7 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       const buffer = Buffer.from(base64Data, "base64");
       const s3params: S3.PutObjectRequest = {
         Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
-        Key: `${name}.png`,
+        Key: `${picture_slug}.png`,
         Body: buffer,
       };
       await s3.upload(s3params).promise();

@@ -1,4 +1,5 @@
 import Add from "../../../assets/icons/svg/Add.svg";
+import Change from "../../../assets/icons/svg/Change.svg";
 import Delete from "../../../assets/icons/svg/Delete.svg";
 import { ButtonPrimary, ButtonSecondary } from "../../Core/Button";
 import { Input } from "../../Core/Input";
@@ -12,8 +13,9 @@ import {
   updateContact,
   viewContact,
 } from "../../../services/contacts.services";
-import S3Image from "../S3Image/S3image";
 import { S3 } from "../../../constants/environements";
+import { Loading } from "../Loading";
+import { ImageUpload } from "../ImageUpload";
 AWS.config.update({
   accessKeyId: S3.accessKeyId,
   secretAccessKey: S3.secretAccessKey,
@@ -28,7 +30,7 @@ const Type = {
 const Popup = () => {
   const dispatch = useAppDispatch();
   const { type, id } = useAppSelector((state) => state.popup);
-  const { loading, contact } = useAppSelector((state) => state.contacts);
+  const { loading, contact } = useAppSelector((state): any => state.contacts);
   const inputRef = useRef<any>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +56,9 @@ const Popup = () => {
           });
         }
       }
+      setFormData((prev) => {
+        return { ...prev, picture: contact.picture };
+      });
     }
   }, [contact]);
 
@@ -63,10 +68,6 @@ const Popup = () => {
   ) => {
     setFormData((prev) => {
       return { ...prev, [field]: e.target.value };
-    });
-
-    setFormData((prev) => {
-      return { ...prev, picture: formData.name };
     });
   };
   const handleSubmit = () => {
@@ -136,70 +137,85 @@ const Popup = () => {
 
   const removeImage = () => {
     setSelectedImage({ buffer: "", url: "" });
+    setFormData((prev) => {
+      return { ...prev, base64: "" };
+    });
   };
-  if (loading) return null;
+
+  console.log("FORM DATA", formData);
+  console.log("IMAGE", selectedImage);
+
+  const content = () => {
+    if (loading) {
+      return <Loading />;
+    }
+    if (type === "DELETE") {
+      return (
+        <h2 className="text-white text-3xl">
+          You sure you want to delete this contact ?
+        </h2>
+      );
+    } else {
+      return (
+        <>
+          <h2 className="text-2xl font-glysa text-white">
+            {type && Type[type as keyof typeof Type]} contact
+          </h2>
+          <div className="flex flex-row items-center justify-between">
+            <input
+              hidden
+              type="file"
+              name="myImage"
+              onChange={(e) => {
+                imageChange(e);
+              }}
+              accept="image/png, image/gif, image/jpeg"
+              ref={inputRef}
+            />
+            <ImageUpload
+              styles="w-[88px] h-[88px] rounded-full"
+              src={selectedImage.url}
+            />
+            <ButtonPrimary
+              icon={type === "EDIT" ? Change : Add}
+              label={type === "EDIT" ? "Change picture" : "Add picture"}
+              onClick={chooseFile}
+            />
+            {selectedImage && selectedImage.url && (
+              <ButtonPrimary
+                icon={Delete}
+                onClick={removeImage}
+              ></ButtonPrimary>
+            )}
+          </div>
+          <Input
+            label={"Name"}
+            placeholder="Jamie Wright"
+            value={formData.name}
+            onChange={(e) => handleForm("name", e)}
+          />
+          <Input
+            label={"Phone number"}
+            placeholder="+01 234 5678"
+            value={formData.phone}
+            onChange={(e) => handleForm("phone", e)}
+          />
+          <Input
+            label={"Email address"}
+            placeholder="jamie.wright@mail.com"
+            value={formData.email}
+            onChange={(e) => handleForm("email", e)}
+          />
+        </>
+      );
+    }
+  };
 
   return (
     <div className="fixed inset-0 w-screen h-screen bg-black bg-opacity-30 flex justify-center items-center">
       <div className="p-8 w-[364px] bg-[#141414] rounded-lg">
         <div className="flex flex-col gap-6">
-          {type === "DELETE" ? (
-            <h2 className="text-white text-3xl">
-              You sure you want to delete this contact ?
-            </h2>
-          ) : (
-            <>
-              <h2 className="text-2xl font-glysa text-white">
-                {type && Type[type as keyof typeof Type]} contact
-              </h2>
-              <div className="flex flex-row items-center justify-between">
-                <input
-                  hidden
-                  type="file"
-                  name="myImage"
-                  onChange={(e) => {
-                    imageChange(e);
-                  }}
-                  accept="image/png, image/gif, image/jpeg"
-                  ref={inputRef}
-                />
-                <S3Image
-                  styles="w-[88px] h-[88px] rounded-full"
-                  src={selectedImage.url}
-                  buffer={selectedImage.buffer}
-                />
-                <ButtonPrimary
-                  icon={Add}
-                  label="Add picture"
-                  onClick={chooseFile}
-                />
-                {selectedImage && selectedImage.url && (
-                  <ButtonPrimary
-                    icon={Delete}
-                    onClick={removeImage}
-                  ></ButtonPrimary>
-                )}
-              </div>
-              <Input
-                label={"Name"}
-                placeholder="Jamie Wright"
-                value={formData.name}
-                onChange={(e) => handleForm("name", e)}
-              />
-              <Input
-                label={"Phone number"}
-                placeholder="+01 234 5678"
-                value={formData.phone}
-                onChange={(e) => handleForm("phone", e)}
-              />
-              <Input
-                label={"Email address"}
-                placeholder="jamie.wright@mail.com"
-                value={formData.email}
-                onChange={(e) => handleForm("email", e)}
-              />
-            </>
-          )}
+          {content()}
           <div className="flex flex-row justify-end gap-2">
             <ButtonSecondary onClick={handleClose} label="Cancel" />
             <ButtonPrimary onClick={handleSubmit} label="Done" />

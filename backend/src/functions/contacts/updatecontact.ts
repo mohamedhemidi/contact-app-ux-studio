@@ -2,7 +2,7 @@ import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import schema from "./schema";
-import { DynamoDB,S3 } from "aws-sdk";
+import { DynamoDB, S3 } from "aws-sdk";
 const dynamoDB = new DynamoDB.DocumentClient();
 
 import { Buffer } from "buffer";
@@ -16,7 +16,8 @@ s3.config.update({
 const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event: any
 ) => {
-  const { email, name, phone, picture, archived,base64 } = event.body;
+  const { email, name, phone, archived, picture, base64 } = event.body;
+  const picture_slug = `${name.split(" ").join("_")}_${email}`;
   const params = {
     TableName: "ConctactsTable",
     Key: {
@@ -35,7 +36,7 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       ":name": name,
       ":email": email,
       ":phone": phone,
-      ":picture": picture,
+      ":picture": picture_slug,
       ":archived": archived,
     },
     ReturnValues: "UPDATED_NEW",
@@ -46,23 +47,55 @@ const handler: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     // Handle Image:
     //
 
-    if(base64) {
+    // If contact is not being removed
+    if (!archived) {
+      // If user wants to put a new image:
+      if (base64) {
+        await s3
+          .deleteObject({
+            Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+            Key: `${picture}.png`,
+          })
+          .promise();
 
+        const base64Image = base64;
+
+        const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const s3params: S3.PutObjectRequest = {
+          Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+          Key: `${picture_slug}.png`,
+          Body: buffer,
+        };
+        await s3.upload(s3params).promise();
+      } else {
+        // If user only wants to  change information:
+
+        // Copy contact image to new instance:
+        await s3
+          .copyObject({
+            Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+            CopySource: `${`${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`}/${picture}.png`,
+            Key: `${picture_slug}.png`,
+          })
+          .promise();
+
+        // Remove contact old image since we needed to rename it:
+        await s3
+          .deleteObject({
+            Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+            Key: `${picture}.png`,
+          })
+          .promise();
+      }
+    } else {
+      // If contact is being DELETED
       await s3
-      .deleteObject({ Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`, Key: `${name}.png` })
-      .promise();
-
-      
-      const base64Image = base64;
-
-      const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, "");
-      const buffer = Buffer.from(base64Data, "base64");
-      const s3params: S3.PutObjectRequest = {
-        Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
-        Key: `${name}.png`,
-        Body: buffer,
-      };
-      await s3.upload(s3params).promise();
+        .deleteObject({
+          Bucket: `${process.env.CUSTOM_AWS_S3_BUCKET}/profile_images`,
+          Key: `${picture}.png`,
+        })
+        .promise();
     }
 
     return formatJSONResponse(200, {
