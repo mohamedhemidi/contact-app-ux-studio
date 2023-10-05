@@ -25,7 +25,7 @@ const params = (name: any) => {
 
 const ImageUpload = ({ src, styles }: Props) => {
   const [imageUrl, setImageUrl] = useState<any>(null);
-  const { type, active } = useAppSelector((state) => state.popup);
+  const { type } = useAppSelector((state) => state.popup);
   const { contact } = useAppSelector<any>((state) => state.contacts);
 
   useEffect(() => {
